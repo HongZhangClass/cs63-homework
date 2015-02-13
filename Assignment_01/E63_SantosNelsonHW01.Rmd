@@ -1,0 +1,158 @@
+---
+title: "Assignment 01"
+author: "Nelson Santos"
+date: "January 31, 2015"
+output: word_document
+---
+
+## Problem 1.
+
+```{r}
+# 16 normaly distributed numbers with mean 0 and sd 1.
+v <- rnorm(16)
+B <- matrix(v, 4)
+B <- B + diag(4)
+B
+
+# Inverse
+BINV <- solve(B)
+BINV
+
+# B x BINV
+round(B %*% BINV) # Rounding compensates for precision problems.
+
+# Eigen values
+eigen(B)$values
+eigen(BINV)$values
+
+# Eigen values (transposed)
+eigen(t(B), only.values = T)$values
+
+# Eigen multiplication
+B %*% eigen(B)$vectors[, 1] # B times first eigen vector.
+eigen(B)$vectors[, 1] * eigen(B)$values[1] # First eigen vector times first eigen value.
+# as.vector is needed since the first calculation returns a matrix,
+# and all.equal is used because == does not handle precision problems well.
+all.equal(as.vector(B %*% eigen(B)$vectors[, 1]), eigen(B)$vectors[, 1] * eigen(B)$values[1])
+```
+
+## Problem 2.
+
+```{r}
+x1 <- seq(0, 10, length.out = 20)
+x2 <- 2.3*x1 - 1.2
+
+# Add 20 normaly distributed numbers with mean 0 and sd 2 to x2.
+x2 <- x2 + rnorm(20, sd = 2)
+
+# Combine the vectors into two column matrix.
+x1x2 <- cbind(x1, x2)
+plot(x1x2)
+```
+
+## Problem 3.
+
+```{r}
+# Covariance matrix
+x1x2.cov <- cov(x1x2)
+x1x2.cov
+
+# Eigen values and vectors
+x1x2.cov.eigen.vec <- eigen(x1x2.cov)$vectors
+x1x2.cov.eigen.val <- eigen(x1x2.cov)$values
+
+# Plot
+plot(x1 - mean(x1), x2 - mean(x2), xlab = "x1 (centered on 0)", ylab = "x2 (centered on 0)", main = "Eigenvectors scaled by Eigenvalues")
+lines(c(0, x1x2.cov.eigen.vec[1,1]*x1x2.cov.eigen.val[1]), c(0, x1x2.cov.eigen.vec[2,1]*x1x2.cov.eigen.val[1]), col='green')
+lines(c(0, x1x2.cov.eigen.vec[1,2]*x1x2.cov.eigen.val[2]), c(0, x1x2.cov.eigen.vec[2,2]*x1x2.cov.eigen.val[2]), col='red')
+```
+### TODO
+
+## Problem 4.
+
+```{r}
+smokers <- read.delim('Smokers.txt', header = T, sep = '\t')
+```
+
+### a)
+
+```{r}
+# Class
+class(smokers)
+
+# Mode
+mode(smokers)
+
+# Structure
+str(smokers)
+```
+
+### b)
+
+```{r}
+# Dimensions
+dim(smokers)
+```
+
+### c)
+
+```{r}
+# Labels
+labels(smokers)[[2]]
+```
+
+### d)
+
+```{r}
+for (l in labels(smokers)[[2]]) {
+  print(head(smokers[l])) # Print the first few occurrences only.
+}
+```
+
+### e)
+
+```{r}
+# Before
+str(smokers$GDPPerCapita)
+
+smokers$GDPPerCapita <- as.numeric(gsub(',', '', smokers$GDPPerCapita))
+
+# After
+str(smokers$GDPPerCapita)
+```
+
+### f)
+
+```{r}
+# Label
+head(smokers["PercentSmokes"]) # Print the first few occurrences only.
+
+# Numeric
+head(smokers[, 3]) # Print the first few occurrences only.
+```
+
+### g)
+
+```{r}
+plot(smokers$PercentSmokes, smokers$GDPPerCapita, xlab = 'Percent Smokers', ylab = 'GDP per Capita', main = 'GDP per Capita over Percent Smokers')
+```
+
+### h)
+
+```{r}
+breaks <- c(0, 2000, 3000, 5000, 10000, 50000)
+hist(smokers$GDPPerCapita, breaks = breaks, xlab = '', main = 'Histogram of GDP per Capita', col.main="purple")
+```
+
+### i)
+
+```{r}
+# Group values into bins.
+bins <- findInterval(smokers$GDPPerCapita, breaks)
+
+# Get frequencies.
+freq <- table(bins)
+
+# Plot pie chart.
+pie(freq, paste(breaks, c(breaks[-1], '...'), sep = ' to '), main = 'Pie chart of GDP per Capita', col.main="purple")
+```
