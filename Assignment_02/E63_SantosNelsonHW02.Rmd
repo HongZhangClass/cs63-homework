@@ -1,0 +1,103 @@
+---
+title: "Assignment 02"
+author: "Nelson Santos"
+date: "2/13/2015"
+output: word_document
+---
+
+## Problem 1.
+
+```{r, echo=TRUE}
+get.successes <- function(p) {
+  x <- rbinom(60, 60, p)
+  return(x)
+}
+
+hist.colors <- c(rgb(1, 0, 0, 0.5), rgb(0, 1, 0 , 0.5), rgb(0, 0 , 1, 0.5))
+
+hist(get.successes(.3), breaks=15, xlim=c(0, 60), main=paste("Binomial Distributions, p = 0.3, 0.5 and 0.8"), xlab="Successful Trials", col=hist.colors[1])
+hist(get.successes(.5), breaks=15, col=hist.colors[2], add=TRUE)
+hist(get.successes(.8), breaks=15, col=hist.colors[3], add=TRUE)
+legend("topright", title="p", legend=c(.3, .5, .8), fill=hist.colors)
+
+get.stats <- function(p) {
+  x <- rbinom(60, 60, p)
+  cat("Statistics for p =", p)
+  cat("1st Quartile:", quantile(x, .25), "\n")
+  cat("Median:", median(x), "\n")
+  cat("Mean:", mean(x), "\n")
+  cat("SD:", sd(x), "\n")
+  cat("3rd Quartile:", quantile(x, .75), "\n")
+  return(x)
+}
+
+x.3 <- get.stats(.3)
+x.5 <- get.stats(.5)
+x.8 <- get.stats(.8)
+
+boxplot(list(x.3, x.5, x.8), main="Probabilities Boxplot", names=c(.3, .5, .8))
+```
+
+## Problem 2.
+
+```{r, echo=TRUE}
+data(faithful)
+plot(faithful, main="Waiting over Eruptions")
+
+model <- lm(waiting ~ eruptions, faithful)
+print(summary(model))
+abline(model, col="red", lwd=3)
+```
+
+## Problem 3.
+
+```{r, echo=TRUE}
+faithful$type <- ifelse(faithful$eruptions < 3.1, "short", "long")
+
+boxplot(waiting ~ type, faithful, main="Distribution for Short and Long bursts", xaxt="n", ylab="Wait Time", col=rainbow(2))
+legend("topright", inset=.05, legend=c("Long", "Short"), title="Eruption Type", fill=rainbow(2))
+```
+
+## Problem 4.
+
+```{r, echo=TRUE}
+random.variable = runif(1000, min=-1, max=2)
+
+hist(random.variable, breaks=20, main="Uniform Distribution")
+
+plot(ecdf(random.variable), main="Uniform Distribution CDF", xlab="Variable", ylab="Probability")
+```
+
+## Problem 5.
+
+```{r, echo=TRUE}
+populator <- function(rows, cols) {
+  return(matrix(runif(cols*rows, min=-1, max=2), nrow=rows, ncol=cols))
+}
+
+mat <- populator(100, 40)
+
+plot.dists <- function(y1, y2, mat) {
+  color.ramp = rainbow(2)
+  x <- seq(nrow(mat))
+  plot(x, mat[, y1], type="l", col=color.ramp[1], main=paste("Distributions for Columns", y1, "and", y2), xaxt="n", xlab="", ylab="")
+  lines(x, mat[, y2], col=color.ramp[2])
+  legend("topright", inset=.05, title="Column", legend=c(y1, y2), fill=color.ramp, bg="white")
+}
+
+rand.cols <- round(runif(2, 0, 40))
+plot.dists(rand.cols[1], rand.cols[2], mat)
+```
+
+## Problem 6.
+
+```{r, echo=TRUE}
+mat.copy <- cbind(mat, apply(mat, 1, sum))
+
+hist(mat.copy[,ncol(mat.copy)], main="Distribution of Sum of Values", xlab="Sum", ylab="Probability", ylim=c(0, .08), col="lightgray", prob=TRUE)
+
+sum.mean <- mean(mat.copy[,ncol(mat.copy)])
+sum.sd <- sd(mat.copy[,ncol(mat.copy)])
+x <- seq(0, 40, length=100)
+curve(dnorm(x, mean=sum.mean, sd=sum.sd), col="red", lwd=2, add=TRUE, yaxt="n")
+```
