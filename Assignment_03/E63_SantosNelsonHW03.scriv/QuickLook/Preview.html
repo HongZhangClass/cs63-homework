@@ -1,0 +1,160 @@
+<html>
+
+<head>
+<title>E63_SantosNelsonHW03</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+	body {background-color: #bac0c7}
+    p.binderItem {margin: 10.0px 0.0px 0.0px 05.0px; font-family:Cochin, Times, Courier, Arial, serif; font-size:14.0px;}
+    .page {border: 1px solid #727272; background: #fff}
+    hr {
+      border-top: 1px dashed #000;
+      border-bottom: 0px solid #fff;
+      color: #fff;
+      background-color: #fff;
+      height: 0px;
+  </style>
+</head>
+
+<body>
+
+<table border="0" width="100%" cellspacing="3">
+<tr>
+<td>
+
+<table class="page" width="100%" cellspacing="10" cellpadding="2">
+<tr>
+<td valign="top">
+
+<ul>
+<li>
+<p class="binderItem"><strong>Problem 1.</strong><br/>Problem 1.</p>
+</li>
+<hr/>
+<ul>
+<li>
+<p class="binderItem"><strong>As shown on the screenshot bellow, once versioning</strong><br/>The screenshot bellow shows that once versioning was enabled, I was able to access different versions of a modified file by selecting the Show option for the versions.<br/>
+</p>
+</li>
+<li>
+<p class="binderItem"><strong>The screenshot bellow shows the result of navigating</strong><br/>The screenshot bellow shows the result of navigating to http://s3.amazonaws.com/hes-e63/problem_1.jpg.<br/>
+</p>
+</li>
+</ul>
+<hr/>
+<li>
+<p class="binderItem"><strong>Problem 2.</strong><br/>Problem 2.</p>
+</li>
+<hr/>
+<ul>
+<li>
+<p class="binderItem"><strong>The screenshot bellow shows an SSH connection to my</strong><br/>The screenshot bellow shows an SSH connection to my EC2 instance.<br/>
+</p>
+</li>
+<li>
+<p class="binderItem"><strong>The screenshot bellow shows an SCP operation from local</strong><br/>The screenshot bellow shows an SCP operation from local to EC2 (local_ec2.txt), and from EC2 to local (ec2_local.txt).<br/>
+</p>
+</li>
+</ul>
+<hr/>
+<li>
+<p class="binderItem"><strong>Problem 3.</strong><br/>Problem 3.</p>
+</li>
+<hr/>
+<ul>
+<li>
+<p class="binderItem"><strong>;; Clojure MapReduce</strong><br/>;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;<br/>
+;; Clojure MapReduce word counter ;;<br/>
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;<br/>
+(ns map-reduce.master<br/>
+  (:gen-class)<br/>
+  (:require [clojure.string :as str]<br/>
+            [clojure.pprint :as pp]))<br/>
+<br/>
+(declare mapper combiner sum reducer)<br/>
+<br/>
+(defn -main [& args]<br/>
+  (with-open [rdr (clojure.java.io/reader "Jabberwocky.txt")]<br/>
+    (->> (doall (line-seq rdr))<br/>
+         (map mapper)<br/>
+         (combiner)<br/>
+         (reducer)<br/>
+       ...</p>
+</li>
+<li>
+<p class="binderItem"><strong>egrep -oi "\w+" Jabberwocky.txt|tr '[:upper:]' '[:lower</strong><br/><br/>
+egrep -oi "\w+" Jabberwocky.txt|tr '[:upper:]' '[:lower:]'|sort|uniq -c<br/>
+   1 1872<br/>
+   1 alice<br/>
+   2 all<br/>
+  15 and<br/>
+   1 arms<br/>
+   2 as<br/>
+   1 awhile<br/>
+   1 back<br/>
+   1 bandersnatch<br/>
+   1 beamish<br/>
+   2 beware<br/>
+   1 bird<br/>
+   1 bite<br/>
+   1 blade<br/>
+   2 borogoves<br/>
+   1 boy<br/>
+   2 brillig<br/>
+   1 burbled<br/>
+   2 by<br/>
+   1 callay<br/>
+   1 callooh<br/>
+   2 came<br/>
+   1 carroll<br/>
+   1 catch<br/>
+   1 chortled<br/>
+   1 claws<br/>
+   1 come<br/>
+   1 day<br/>
+   1 dead<br/>
+   2 did<br/>
+   1 eyes<br/>
+   1 flame<br/>
+   1 foe<br/>
+   1 found<br/>
+   1 frabjous<br/>
+   1 from<br/>
+   1 frumious<br/>
+   1 galumphing...</p>
+</li>
+</ul>
+<hr/>
+<li>
+<p class="binderItem"><strong>Problem 4.</strong><br/>Problem 4.</p>
+</li>
+<hr/>
+<ul>
+<li>
+<p class="binderItem"><strong>Log output</strong><br/>EMR Log output:<br/>
+<br/>
+Downloading 's3://elasticmapreduce/libs/pig/pig-script' to '/mnt/var/lib/hadoop/steps/s-18ZRNYHV5Q1NP/.'<br/>
+2015-02-17 03:25:12 GMT - INFO java version: 1.7<br/>
+hadoop version 2.4.0<br/>
+java version: 1.7<br/>
+pig versions: 0.12.0<br/>
+2015-02-17 03:25:12 GMT - INFO Running: /home/hadoop/pig/bin/pig -l . '-f' 's3://elasticmapreduce/samples/pig-apache/do-reports2.pig' '-p' 'INPUT=s3://elasticmapreduce/samples/pig-apache/input' '-p' 'OUTPUT=s3://hes-e63/pig-apache/output'</p>
+</li>
+<li>
+<p class="binderItem"><strong>It looks like the script parsed and analysed</strong><br/>It looks like the script parsed and analyzed web server logs. These logs are created and stored as single line events with multiple attributes, such as requester (client) IP, HTTP referer, request size, and more. The script parsed those logs (which could well be stored on multiple files, on different machines) and ranked (top 50’s) and aggregated (bytes/hour) the information. </p>
+</li>
+</ul>
+</ul>
+
+</td>
+<td width="8">
+</td>
+</tr>
+</table>
+
+</td>
+</tr>
+</table>
+
+</body>
+</html>
