@@ -70,6 +70,7 @@ public class PatentsByCountry extends Configured implements Tool {
         JobClient.runJob(job);
         return 0;
     }
+
     public static void main(String[] args) throws Exception {
         int res = ToolRunner.run(new Configuration(), new PatentsByCountry(), args);
         System.exit(res);
