@@ -16,12 +16,10 @@ import java.util.Set;
 /**
  * Created by nsantos on 3/11/15.
  * Assignment 06 | Problem 04
- * List patents granted to each country.
+ * Chained jobs to group and count patents per country of origin. This version uses the old API.
  */
 public class ChainedHistogramOldAPI extends Configured implements Tool {
-
     public static class MapClass1 extends MapReduceBase implements Mapper<Text, Text, Text, Text> {
-
         public void map(Text key, Text value, OutputCollector<Text, Text> output, Reporter reporter)
                 throws IOException {
             // Decided against using a CSV library for performance reasons.
@@ -40,7 +38,6 @@ public class ChainedHistogramOldAPI extends Configured implements Tool {
     }
 
     public static class Reduce1 extends MapReduceBase implements Reducer<Text, Text, Text, Set<String>> {
-
         public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Set<String>> output,
                            Reporter reporter) throws IOException {
             // Using Set will automatically remove duplicates.
@@ -65,7 +62,6 @@ public class ChainedHistogramOldAPI extends Configured implements Tool {
 
     public static class Reduce2 extends MapReduceBase
             implements Reducer<Text, IntWritable, Text, IntWritable> {
-
         public void reduce(Text key, Iterator<IntWritable> values,
                            OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
             // This should only run once, since mapper returns full count. But why change something that is working...

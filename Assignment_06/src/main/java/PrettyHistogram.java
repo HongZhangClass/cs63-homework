@@ -16,7 +16,7 @@ import java.io.IOException;
 /**
  * Created by nsantos on 3/12/15.
  * Assignment 06 | Problem 05
- * List patents granted to each country.
+ * Print a pretty histogram for citation counts.
  */
 
 public class PrettyHistogram {

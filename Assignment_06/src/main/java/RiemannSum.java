@@ -18,12 +18,10 @@ import java.io.IOException;
 
 /**
  * Created by nsantos on 3/12/15.
- * Assignment 06 | Problem 05
+ * Assignment 06 | Problem 06
  * Riemann sum implementation. Ideally, we should have a custom InputFormat that outputs individual elements
- * of the sum. That way each mapper can handle a multiplication and the reducer only does the sum.
- * As it is, this implementation only uses one mapper.
+ * of the sum.
  */
-
 public class RiemannSum {
     public static class MyMapper extends Mapper<LongWritable, Text, Text, DoubleWritable> {
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {

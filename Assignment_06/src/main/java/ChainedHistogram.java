@@ -1,29 +1,28 @@
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.hadoop.io.IntWritable;
 import org.apache.hadoop.io.Text;
-import org.apache.hadoop.mapred.*;
-import org.apache.hadoop.util.Tool;
-import org.apache.hadoop.util.ToolRunner;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+import org.apache.hadoop.mapreduce.lib.input.KeyValueTextInputFormat;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.lib.output.TextOutputFormat;
 
 import java.io.IOException;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
  * Created by nsantos on 3/11/15.
  * Assignment 06 | Problem 03
- * List patents granted to each country.
+ * Chained jobs to group and count patents per country of origin.
  */
-public class ChainedHistogram extends Configured implements Tool {
-
-    public static class MapClass1 extends MapReduceBase implements Mapper<Text, Text, Text, Text> {
-
-        public void map(Text key, Text value, OutputCollector<Text, Text> output, Reporter reporter)
-                throws IOException {
+public class ChainedHistogram {
+    public static class MyMapper1 extends Mapper<Text, Text, Text, Text> {
+        public void map(Text key, Text value, Context context) throws IOException, InterruptedException {
             // Decided against using a CSV library for performance reasons.
             String[] countries = value.toString().replace("\"", "").split(",");
             // If state is empty (i.e. non-US patent), use country column...
@@ -35,107 +34,107 @@ public class ChainedHistogram extends Configured implements Tool {
             }
 
             // Country as key and patent as value.
-            output.collect(value, key);
+            context.write(value, key);
         }
     }
 
-    public static class Reduce1 extends MapReduceBase implements Reducer<Text, Text, Text, Set<String>> {
-
-        public void reduce(Text key, Iterator<Text> values, OutputCollector<Text, Set<String>> output,
-                           Reporter reporter) throws IOException {
+    public static class MyReducer1 extends Reducer<Text, Text, Text, Set<String>> {
+        public void reduce(Text key, Iterable<Text> values, Context context) throws IOException, InterruptedException {
             // Using Set will automatically remove duplicates.
             Set<String> patents = new HashSet<String>();
-            while (values.hasNext()) {
-                patents.add(values.next().toString());
+            for (Text value : values) {
+                patents.add(value.toString());
             }
-            output.collect(key, patents);
+            context.write(key, patents);
         }
     }
 
-    public static class MapClass2 extends MapReduceBase implements Mapper<Text, Text, Text, IntWritable> {
+    public static class MyMapper2 extends Mapper<Text, Text, Text, IntWritable> {
         private IntWritable patentCount = new IntWritable();
 
-        public void map(Text key, Text value, OutputCollector<Text, IntWritable> output, Reporter reporter)
-                throws IOException {
+        public void map(Text key, Text value, Context context) throws IOException, InterruptedException {
             // This split will leave brackets and commas, but that's fine since we only care about the length.
             patentCount.set(value.toString().split(",").length);
-            output.collect(key, patentCount);
+            context.write(key, patentCount);
         }
     }
 
-    public static class Reduce2 extends MapReduceBase
-            implements Reducer<Text, IntWritable, Text, IntWritable> {
-
-        public void reduce(Text key, Iterator<IntWritable> values,
-                           OutputCollector<Text, IntWritable> output, Reporter reporter) throws IOException {
+    public static class MyReducer2 extends Reducer<Text, IntWritable, Text, IntWritable> {
+        public void reduce(Text key, Iterable<IntWritable> values, Context context)
+                throws IOException, InterruptedException {
             // This should only run once, since mapper returns full count. But why change something that is working...
             int count = 0;
-            while (values.hasNext()) {
-                count += values.next().get();
+            for (IntWritable value : values) {
+                count += value.get();
             }
-            output.collect(key, new IntWritable(count));
+            context.write(key, new IntWritable(count));
         }
     }
 
-    private JobConf createJob1(Configuration conf, Path in, Path out) {
-        JobConf job = new JobConf(conf, ChainedHistogram.class);
+    private static Job createJob1(Path in, Path out) throws IOException {
+        Configuration conf = new Configuration();
+        conf.set("mapreduce.input.keyvaluelinerecordreader.key.value.separator", ",");
+
+        Job job = Job.getInstance(conf);
+
+        job.setJarByClass(PatentsByCountry.class);
+        job.setMapOutputKeyClass(Text.class);
+        job.setMapOutputValueClass(Text.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(Set.class);
+        job.setMapperClass(MyMapper1.class);
+        job.setReducerClass(MyReducer1.class);
+        job.setInputFormatClass(KeyValueTextInputFormat.class);
+        job.setOutputFormatClass(TextOutputFormat.class);
+
         FileInputFormat.setInputPaths(job, in);
         FileOutputFormat.setOutputPath(job, out);
-
-        job.setJobName("job1");
-        job.setMapperClass(MapClass1.class);
-        job.setReducerClass(Reduce1.class);
-        job.setInputFormat(KeyValueTextInputFormat.class);
-        job.setOutputFormat(TextOutputFormat.class);
-        job.setOutputKeyClass(Text.class);
-        job.setOutputValueClass(Text.class);
-        job.set("key.value.separator.in.input.line", ",");
 
         return job;
     }
 
-    private JobConf createJob2(Configuration conf, Path in, Path out) {
-        JobConf job = new JobConf(conf, ChainedHistogram.class);
-        FileInputFormat.setInputPaths(job, in);
-        FileOutputFormat.setOutputPath(job, out);
+    private static Job createJob2(Path in, Path out) throws IOException {
+        Configuration conf = new Configuration();
 
-        job.setJobName("job2");
-        job.setMapperClass(MapClass2.class);
-        job.setReducerClass(Reduce2.class);
+        Job job = Job.getInstance(conf);
 
-        job.setInputFormat(KeyValueTextInputFormat.class);
-        job.setOutputFormat(TextOutputFormat.class);
+        job.setJarByClass(PatentsByCountry.class);
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(IntWritable.class);
+        job.setMapperClass(MyMapper2.class);
+        job.setReducerClass(MyReducer2.class);
+        job.setInputFormatClass(KeyValueTextInputFormat.class);
+        job.setOutputFormatClass(TextOutputFormat.class);
+
+        FileInputFormat.setInputPaths(job, in);
+        FileOutputFormat.setOutputPath(job, out);
 
         return job;
     }
 
-    private void cleanup(Path temp, Configuration conf) throws IOException {
+    private static void cleanup(Path temp) throws IOException {
+        Configuration conf = new Configuration();
         FileSystem fs = temp.getFileSystem(conf);
         fs.delete(temp, true);
     }
 
-    public int run(String[] args) throws Exception {
-        Configuration conf = getConf();
+    public static void main(String[] args) throws Exception {
         Path in = new Path(args[0]);
         Path out = new Path(args[1]);
         Path temp = new Path("temp");
 
-        JobConf job1 = createJob1(conf, in, temp);
-        JobClient.runJob(job1);
+        Job job1 = createJob1(in, temp);
+        boolean status1 = job1.waitForCompletion(true);
 
-        JobConf job2 = createJob2(conf, temp, out);
-        JobClient.runJob(job2);
+        Job job2 = createJob2(temp, out);
+        boolean status2 = job2.waitForCompletion(true);
 
-        cleanup(temp, conf);
+        cleanup(temp);
 
-        return 0;
-    }
-
-    public static void main(String[] args) throws Exception {
-        int res = ToolRunner.run(new Configuration(), new ChainedHistogram(), args);
-
-        System.exit(res);
+        if (status1 && status2) {
+            System.exit(0);
+        } else {
+            System.exit(1);
+        }
     }
 }
