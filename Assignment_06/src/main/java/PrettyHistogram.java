@@ -24,7 +24,7 @@ public class PrettyHistogram {
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
             String citationCount[] = value.toString().split("\\s+");
 
-            int bucket = (int)Math.ceil(Integer.parseInt(citationCount[0])/20);
+            int bucket = Integer.parseInt(citationCount[0])/20;
 
             context.write(new IntWritable(bucket), new IntWritable(Integer.parseInt(citationCount[1])));
         }
