@@ -32,7 +32,6 @@
 </head>
 <body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
-<script src="http://d3js.org/queue.v1.min.js"></script>
 <section>
     <form>
         <label>1995</label>
@@ -51,12 +50,6 @@
     </form>
 </section>
 <script>
-    queue()
-            .defer(d3.csv, "data/sh.xpd.pcap_Indicator_en_csv_v2.csv")
-            .defer(d3.csv, "data/Metadata_Country_sh.xpd.pcap_Indicator_en_csv_v2.csv")
-            .defer(d3.csv, "data/Metadata_Indicator_sh.xpd.pcap_Indicator_en_csv_v2.csv")
-            .await(init);
-
     var margin = {top: 10, right: 30, bottom: 30, left: 30},
             width = 960 - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom;
@@ -68,16 +61,10 @@
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
     var data;
-
-    function init(error, expenditure, countries, indicators) {
-        if (error) {
-            alert(error);
-        }
-
-        data = expenditure;
-
+    d3.csv("data/sh.xpd.pcap_Indicator_en_csv_v2.csv", function(csv) {
+        data = csv;
         update();
-    }
+    });
 
     function update() {
         var year = +d3.select("[name=year]").node().value;
@@ -153,7 +140,7 @@
                                 if (i < d.length - 1) {
                                     countries += "\n";
                                 }
-                    });
+                            });
                     return countries;
                 });
 
@@ -169,7 +156,6 @@
         svg.select(".y.axis")
                 .call(yAxis);
     }
-
 </script>
 </body>
 </html>

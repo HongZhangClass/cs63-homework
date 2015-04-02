@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <style>
+
+        body {
+            font: 10px sans-serif;
+        }
+
+        .bar rect {
+            fill: steelblue;
+            shape-rendering: crispEdges;
+        }
+
+        .bar text {
+            fill: #fff;
+        }
+
+        rect:hover {
+            fill: crimson;
+        }
+
+        .axis path, .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+
+    </style>
+    <title>Assignment 08 - Problem 01</title>
+</head>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<section>
+    <form>
+        <label>1995</label>
+        <input type="range" name="year" min="1995" max="2012" value="2000" onchange="update()">
+        <label>2012</label>
+    </form>
+    <br>
+
+    <form>
+        <label>Bins: </label>
+        <select name="bins" onchange="update()">
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>
+    </form>
+</section>
+<script>
+    var margin = {top: 10, right: 30, bottom: 30, left: 30},
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom,
+            radius = Math.min(width, height) / 2;
+
+    var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+
+    var arc = d3.svg.arc()
+            .outerRadius(radius - 10)
+            .innerRadius(0);
+
+    var formatCount = d3.format("$,.2f");
+
+    var data;
+    d3.csv("data/sh.xpd.pcap_Indicator_en_csv_v2.csv", function(csv) {
+        data = csv;
+        update();
+    });
+
+    function update() {
+        var year = +d3.select("[name=year]").node().value;
+        var bins = +d3.select("[name=bins]").node().value;
+
+        var color = d3.scale.category20c();
+
+        var hist = d3.layout.histogram()
+                .value(function (d) {
+                    return +d[year];
+                })
+                .bins(bins);
+
+        var pie = d3.layout.pie()
+                .sort(null)
+                .value(function (d) {
+                    return d.length;
+                });
+
+        svg.selectAll(".arc").remove();
+
+        var g = svg.selectAll(".arc")
+                .data(pie(hist(data)))
+                .enter().append("g")
+                .attr("class", "arc");
+
+        g.append("path")
+                .attr("d", arc)
+                .style("fill", function(d) { return color(d.value); })
+                .append("title")
+                .text(function(d) {
+                    var countries = "";
+                    d.data.sort(function(a, b) { return d3.ascending(a["Country Name"], b["Country Name"]) })
+                            .forEach(function(f, i) {
+                                countries += f["Country Name"];
+                                if (i < d.value - 1) {
+                                    countries += "\n";
+                                }
+                            });
+                    var range = d3.extent(
+                            d.data.map(function (d) {
+                                return +d[year];
+                            }));
+
+                    return formatCount(range[0]) + " - " + formatCount(range[1]) + "\n\n" + countries;
+                });
+    }
+</script>
+</body>
+</html>
