@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <style>
+
+        body {
+            font: 10px sans-serif;
+        }
+
+        .bar rect {
+            fill: steelblue;
+            shape-rendering: crispEdges;
+        }
+
+        .bar text {
+            fill: #fff;
+        }
+
+        rect:hover {
+            fill: crimson;
+        }
+
+        .axis path, .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+
+    </style>
+    <title>Assignment 08 - Problem 01</title>
+</head>
+<body>
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="http://d3js.org/queue.v1.min.js"></script>
+<section>
+    <form>
+        <label>1995</label>
+        <input type="range" name="year" min="1995" max="2012" value="2000" onchange="update()">
+        <label>2012</label>
+    </form>
+    <br>
+
+    <form>
+        <label>Bins: </label>
+        <select name="bins" onchange="update()">
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>
+    </form>
+</section>
+<script>
+    queue()
+            .defer(d3.csv, "data/sh.xpd.pcap_Indicator_en_csv_v2.csv")
+            .defer(d3.csv, "data/Metadata_Country_sh.xpd.pcap_Indicator_en_csv_v2.csv")
+            .defer(d3.csv, "data/Metadata_Indicator_sh.xpd.pcap_Indicator_en_csv_v2.csv")
+            .await(init);
+
+    var margin = {top: 10, right: 30, bottom: 30, left: 30},
+            width = 960 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;
+
+    var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+    var data;
+
+    function init(error, expenditure, countries, indicators) {
+        if (error) {
+            alert(error);
+        }
+
+        data = expenditure;
+
+        update();
+    }
+
+    function update() {
+        var year = +d3.select("[name=year]").node().value;
+        var bins = +d3.select("[name=bins]").node().value;
+
+        var maxValue = d3.max(data.map(function (d) {
+            return +d[year];
+        }));
+
+        var x = d3.scale.linear()
+                .domain([0, maxValue])
+                .range([0, width]);
+
+        var xAxis = d3.svg.axis()
+                .scale(x)
+                .orient("bottom");
+
+        var hist = d3.layout.histogram()
+                .value(function (d) {
+                    return +d[year];
+                })
+                .bins(bins)
+        (data);
+
+        var y = d3.scale.linear()
+                .domain([0, d3.max(hist, function (d) {
+                    return d.y;
+                })])
+                .range([height, 0]);
+
+        var yAxis = d3.svg.axis()
+                .scale(y)
+                .orient("left");
+
+        svg.selectAll(".bar").remove();
+
+        svg.select(".x.axis").remove();
+
+        svg.select(".y.axis").remove();
+
+        var bar = svg.selectAll(".bar")
+                .data(hist, function(d) {
+                    return d.x + d.dx;
+                });
+
+        bar.enter().append("g")
+                .attr("class", "bar")
+                .attr("transform", function (d) {
+                    return "translate(" + x(d.x) + "," + y(d.y) + ")";
+                });
+
+        svg.append("g")
+                .attr("class", "x axis")
+                .attr("transform", "translate(0," + height + ")")
+                .call(xAxis);
+
+        svg.append("g")
+                .attr("class", "y axis")
+                .call(yAxis);
+
+        bar.append("rect")
+                .attr("x", 1)
+                .attr("width", x(hist[0].dx) >= 1 ? x(hist[0].dx)  - 1 : x(hist[0].dx))
+                .attr("height", function (d) {
+                    return height - y(d.y);
+                })
+                .append("title")
+                .text(function(d) {
+                    var countries = "";
+                    d.sort(function(a, b) { return d3.ascending(a["Country Name"], b["Country Name"]) })
+                            .forEach(function(f, i) {
+                                countries += f["Country Name"];
+                                if (i < d.length - 1) {
+                                    countries += "\n";
+                                }
+                    });
+                    return countries;
+                });
+
+        bar.append("text")
+                .attr("dy", ".75em")
+                .attr("y", 6)
+                .attr("x", x(hist[0].dx) / 2)
+                .attr("text-anchor", "middle");
+
+        svg.select(".x.axis")
+                .call(xAxis);
+
+        svg.select(".y.axis")
+                .call(yAxis);
+    }
+
+</script>
+</body>
+</html>
